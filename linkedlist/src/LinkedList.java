@@ -1,9 +1,9 @@
 public final class LinkedList<T> {
 
-	private DannyNode head;
+	private Danode head;
 
 	final void add(T value) {
-		DannyNode n = new DannyNode(value);
+		Danode n = new Danode(value);
 		if (head == null) {
 			head = n;
 		} else {
@@ -45,15 +45,15 @@ public final class LinkedList<T> {
 	}
 
 
-	private final class DannyNode {
+	private final class Danode {
 		final T value;
-		DannyNode next;
+		Danode next;
 
-		DannyNode(T value) {
+		Danode(T value) {
 			this.value = value;
 		}
 
-		private void addEnd(DannyNode n) {
+		private void addEnd(Danode n) {
 			if (this.next == null) {
 				this.next = n;
 			} else {
