@@ -3,7 +3,7 @@ public final class LinkedList<T> {
 	private Danode head;
 
 	final void add(T value) {
-		Danode n = new Danoderworm(value);
+		Danode n = new Danode(value);
 		if (head == null) {
 			head = n;
 		} else {
