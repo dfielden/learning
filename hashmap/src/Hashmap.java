@@ -1,10 +1,8 @@
-
-
 public final class Hashmap<K, V> {
 	private final Object[] map = new Object[8];
-	public final static String keyNotPresent = "Map does not contain key, ";
+	private final static String KEY_NOT_PRESENT_ERROR_PREFIX = "Map does not contain key, ";
 
-	void addNodeEnd(K key, V value) {
+	public void addNodeEnd(K key, V value) {
 		if (checkContains(key)) {
 			// update value
 			MapNode n = getMapNode(key);
@@ -21,7 +19,7 @@ public final class Hashmap<K, V> {
 		}
 	}
 
-	void addNodeStart(K key, V value) {
+	public void addNodeStart(K key, V value) {
 		if (checkContains(key)) {
 			// update value
 			MapNode n = getMapNode(key);
@@ -29,17 +27,19 @@ public final class Hashmap<K, V> {
 		} else {
 			int pos = hash(key);
 			MapNode node = new MapNode(key, value);
+			// current bucket is empty
 			if (map[pos] == null) {
 				map[pos] = node;
 			} else {
+				// current bucket already contains a node
 				MapNode head = (MapNode)map[pos];
 				node.next = head;
-				map[pos] = head;
+				map[pos] = node;
 			}
 		}
 	}
 
-	boolean checkContains(K key) {
+	public boolean checkContains(K key) {
 		int pos = hash(key);
 		if (map[pos] == null) {
 			return false;
@@ -48,44 +48,67 @@ public final class Hashmap<K, V> {
 		return n.containsKey(key);
 	}
 
-
-	V getValue(K key) {
-		int pos = hash(key);
-		if (map[pos] == null) {
-			throw new IllegalStateException(keyNotPresent + key);
+	public boolean isEmpty() {
+		for (int i = 0; i < map.length; i++) {
+			if (map[i] != null) {
+				return false;
+			}
 		}
-		MapNode n = (MapNode)map[pos];
-		return n.getValue(key);
+		return true;
 	}
 
-	void delete(K key) {
-		if (!checkContains(key)) {
-			throw new IllegalStateException(keyNotPresent + key);
+	public int numEntries() {
+		int total = 0;
+		for (int i = 0; i < map.length; i++) {
+			MapNode n = (MapNode)map[i];
+			if (n != null) {
+				total += n.countNext();
+			}
 		}
+		return total;
+	}
+
+
+	public V getValue(K key) {
+		int pos = hash(key);
+		if (map[pos] != null) {
+			MapNode n = (MapNode)map[pos];
+			return n.getValue(key);
+		} else {
+			return null;
+		}
+	}
+
+	public void deleteIfPresent(K key) {
 		int pos = hash(key);
 		MapNode head = (MapNode)map[pos];
+		if (head == null) {
+			return;
+		}
 		if (head.key == key) {
 			if (head.next == null) {
-				head = null;
+				map[pos] = null;
 			} else {
-				head.next = head;
+				map[pos] = head.next;
+				head.next = null;
 			}
 		} else {
 			head.deleteDownstream(key);
 		}
 	}
 
-	MapNode getMapNode(K key) {
-		if (!checkContains(key)) {
-			throw new IllegalStateException(keyNotPresent + key);
-		}
+	public MapNode getMapNode(K key) {
 		int pos = hash(key);
 		MapNode n = (MapNode)map[pos];
-		return n.getMapNode(key);
+		if (n != null) {
+			return n.getMapNode(key);
+		} else {
+			return null;
 		}
+	}
 
 	private int hash(K key) {
-		return hash(key) % 8;
+		return Math.abs(key.hashCode()) % map.length;
 	}
 
 
@@ -112,8 +135,13 @@ public final class Hashmap<K, V> {
 		}
 
 		V getValue(K key) {
-			MapNode n = this.getMapNode(key);
-			return n.value;
+			if (this.key == key) {
+				return this.value;
+			}
+			if (next == null) {
+				return null;
+			}
+			return next.getValue(key);
 		}
 
 		void addEnd(MapNode n) {
@@ -126,7 +154,7 @@ public final class Hashmap<K, V> {
 
 		void deleteDownstream(K key) {
 			if (next == null) {
-				throw new IllegalStateException(keyNotPresent + key);
+				return;
 			}
 			if (next.key == key) {
 				if (next.next == null) {
@@ -143,10 +171,19 @@ public final class Hashmap<K, V> {
 			if (this.key == key) {
 				return this;
 			}
+			// This will never occur because we always check ifExists(key) before calling this function
 			if (next == null) {
-				throw new IllegalStateException(keyNotPresent + key);
+				return null;
 			}
 			return next.getMapNode(key);
 		}
+
+		int countNext() {
+			if (next == null) {
+				return 1;
+			}
+			return 1 + next.countNext();
+		}
 	}
 }
+
