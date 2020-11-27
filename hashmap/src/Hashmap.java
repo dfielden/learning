@@ -1,12 +1,11 @@
 public final class Hashmap<K, V> {
 	private final Object[] map = new Object[8];
-	private final static String KEY_NOT_PRESENT_ERROR_PREFIX = "Map does not contain key, ";
 
 	public void addNodeEnd(K key, V value) {
-		if (checkContains(key)) {
-			// update value
-			MapNode n = getMapNode(key);
-			n.getMapNode(key).value = value;
+		// update value if key already in tree
+		MapNode n = getMapNode(key);
+		if (n != null) {
+			n.value = value;
 		} else {
 			int pos = hash(key);
 			MapNode node = new MapNode(key, value);
@@ -20,10 +19,9 @@ public final class Hashmap<K, V> {
 	}
 
 	public void addNodeStart(K key, V value) {
-		if (checkContains(key)) {
-			// update value
-			MapNode n = getMapNode(key);
-			n.getMapNode(key).value = value;
+		MapNode n = getMapNode(key);
+		if (n != null) {
+			n.value = value;
 		} else {
 			int pos = hash(key);
 			MapNode node = new MapNode(key, value);
@@ -67,7 +65,6 @@ public final class Hashmap<K, V> {
 		}
 		return total;
 	}
-
 
 	public V getValue(K key) {
 		int pos = hash(key);
@@ -113,7 +110,7 @@ public final class Hashmap<K, V> {
 
 
 	final class MapNode {
-		K key;
+		final K key;
 		V value;
 		MapNode next;
 

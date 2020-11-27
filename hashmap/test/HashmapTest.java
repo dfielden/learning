@@ -12,19 +12,27 @@ public class HashmapTest {
 		assertTrue(map.isEmpty());
 		assertEquals(0, map.numEntries());
 
+		// Try a range of keys.
 		for (int i = 0; i < 100; i++) {
 			assertFalse(map.checkContains(i));
-			map.deleteIfPresent(i);
 			assertNull(map.getMapNode(i));
 		}
 	}
 
 	@Test
-	public void detectNotEmpty() {
+	public void isEmpty() {
 		Hashmap<Integer, String> map = new Hashmap<>();
 		assertTrue(map.isEmpty());
 		map.addNodeEnd(1, generateString(1));
 		assertFalse(map.isEmpty());
+	}
+
+	@Test
+	public void ensureDeleteOnNonExistentKeyDoesntThrow() {
+		// This test ensures it is safe to delete a non-existent key.
+		Hashmap<Integer, String> map = new Hashmap<>();
+		map.deleteIfPresent(123);
+		assertFalse(map.checkContains(123));
 	}
 
 	@Test
@@ -36,7 +44,6 @@ public class HashmapTest {
 			map.addNodeEnd(i, generateString(i));
 			assertFalse(map.isEmpty());
 			assertEquals(i + 1, map.numEntries());
-
 
 			for (int j = 0; j < 100; j++) {
 				if (j <= i) {
@@ -61,7 +68,6 @@ public class HashmapTest {
 			map.addNodeStart(i, generateString(i));
 			assertFalse(map.isEmpty());
 			assertEquals(i + 1, map.numEntries());
-
 
 			for (int j = 0; j < 100; j++) {
 				if (j <= i) {
