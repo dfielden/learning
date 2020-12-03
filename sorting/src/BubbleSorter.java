@@ -81,7 +81,7 @@ class Person {
 
 	@Override
 	public String toString() {
-		return "Name: " + this.getFirstName() + " " + this.getLastName() + ", Score: " + this.getAge();
+		return "Name: " + this.getFirstName() + " " + this.getLastName() + ", Age: " + this.getAge();
 	}
 }
 
