@@ -1,7 +1,9 @@
 import org.junit.Test;
 import java.util.*;
 import static org.junit.Assert.*;
+
 public class PrioritisingQueueTest {
+	private final Random rand = new Random();
 
 	@Test
 	public void empty() {
@@ -70,7 +72,6 @@ public class PrioritisingQueueTest {
 		q.add(new Critter("a", "a", 1));
 		assertEquals(1, q.poll().getAge());
 		assertEquals(2, q.poll().getAge());
-
 		assertEquals(4, q.poll().getAge());
 	}
 
@@ -107,8 +108,22 @@ public class PrioritisingQueueTest {
 		pQueue.remove(critter1);
 		assertFalse(pQueue.contains(critter1));
 		assertTrue(pQueue.contains(critter5));
+	}
 
+	@Test
+	public void removeNonExistentInNonEmptyQueue() {
+		PrioritisingQueue<Integer> q = new PrioritisingQueue<>(Integer::compare);
+		q.add(5);
 
+		// Remove non-existent item.
+		assertNull(q.remove(4));
+		assertNull(q.remove(6));
+
+		// Remove '5' and verify again.
+		assertEquals(5, (int) q.remove(5));
+		assertNull(q.remove(4));
+		assertNull(q.remove(5));
+		assertNull(q.remove(6));
 	}
 
 	@Test
@@ -136,32 +151,39 @@ public class PrioritisingQueueTest {
 		assertEquals(0, pQueue.size());
 	}
 
-	public int generateRandomAge() {
+	private static int generateRandomAge() {
 		return (int)(Math.random() * (101));
 	}
-
-	private final Random rand = new Random();
 
 	@Test
 	public void exhaustiveTest() {
 		// For many different tree sizes, do a suite of random tests.
-		for (int n=1; n<15; n++) {
+		for (int n=1; n<50; n++) {
 			// Run each tree size many times.
-			for (int i=0; i<1000; i++) {
-				testWithTreeSize(n);
+			for (int i=0; i<=1000; i++) {
+				testWithTreeSize(n, false);
+				testWithTreeSize(n, true);
 			}
 		}
 	}
 
-	private void testWithTreeSize(int n) {
+	private void testWithTreeSize(int n, boolean tightNumberRange) {
 		PrioritisingQueue<Long> q = new PrioritisingQueue<>(Long::compare);
 		long lowestVal = Long.MAX_VALUE;
+		long highestVal = 0;
+
 		// Add elements.
 		for (int i=0; i<n; i++) {
-			long a = Math.abs(rand.nextLong());
+			long a = tightNumberRange ? rand.nextInt((n+1) / 2) : Math.abs(rand.nextLong());
+
+			// Keep track of the minimum value, so we can interrogate the left/right leaf after each operation.
 			if (a < lowestVal) {
 				lowestVal = a;
 			}
+			if (a > highestVal) {
+				highestVal = a;
+			}
+
 			// Add.
 			q.add(a);
 
@@ -170,6 +192,7 @@ public class PrioritisingQueueTest {
 
 			// Check other things...
 			assertEquals(lowestVal, (long)q.peek());
+			assertEquals(highestVal, (long) q.head.getMaxRight().getObj());
 		}
 
 		// Remove elements, alternating first/last.
@@ -177,7 +200,9 @@ public class PrioritisingQueueTest {
 			if (i % 2 == 0) {
 				q.poll();
 			} else {
-				q.remove(q.head.getMaxRight().getObj());
+				long toRemove = q.head.getMaxRight().getObj();
+				long removed = q.remove(toRemove);
+				assertEquals(toRemove, removed);
 			}
 			assertEquals(n - i - 1, q.size());
 		}
@@ -199,11 +224,11 @@ class Critter {
 		this.age = age;
 	}
 
-	public String getFirstName() {
+	String getFirstName() {
 		return firstName;
 	}
 
-	public String getLastName() {
+	String getLastName() {
 		return lastName;
 	}
 
