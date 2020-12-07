@@ -1,3 +1,4 @@
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Comparator;
 
@@ -5,7 +6,7 @@ public class PrioritisingQueue<T> implements DannyPriorityQueue<T> {
 	private final Comparator<T> comparator;
 	QueueNode head = null;
 
-	public PrioritisingQueue(Comparator<T> comparator) {
+	PrioritisingQueue(Comparator<T> comparator) {
 		this.comparator = comparator;
 	}
 
@@ -21,29 +22,19 @@ public class PrioritisingQueue<T> implements DannyPriorityQueue<T> {
 
 	@Override
 	public boolean contains(T obj) {
-		if (head == null) {
-			return false;
-		} else {
-			return head.checkContains(obj);
-		}
+		return head != null && head.checkContains(obj);
 	}
 
 	@Override
 	@Nullable
 	public T peek() {
-		if (head == null) {
-			return null;
-		}
-		return head.getMinLeft().getObj();
+		return head == null ? null : head.getMinLeft().getObj();
 	}
 
 	@Override
 	@Nullable
 	public T poll() {
-		if (head == null) {
-			return null;
-		}
-		return remove(head.getMinLeft().getObj());
+		return head == null ? null : remove(head.getMinLeft().getObj());
 	}
 
 	@Override
@@ -76,10 +67,10 @@ public class PrioritisingQueue<T> implements DannyPriorityQueue<T> {
 
 		// TARGET NODE IS A LEAF
 		if (targetNode.isLeaf()) {
-			assert(parentNode != null); // can't be null because we know target node is not head
+			assert(parentNode != null); // can't be null because we know target node is not head - node must have parent
 			if (parentNode.right != null && parentNode.right.checkEqualPriority(obj)) {
 				parentNode.right = null;
-			} else if (parentNode.left != null && parentNode.left.checkEqualPriority(obj)){
+			} else if (parentNode.left != null && parentNode.left.checkEqualPriority(obj)) {
 				parentNode.left = null;
 			}
 			return t;
@@ -87,14 +78,14 @@ public class PrioritisingQueue<T> implements DannyPriorityQueue<T> {
 
 		// TARGET NODE HAS CHILDREN IN ONLY ONE DIRECTION
 		if (targetNode.left == null || targetNode.right == null) {
-			assert(parentNode != null); // can't be null because we know target node is not head
+			assert(parentNode != null); // can't be null because we know target node is not head - node must have parent
 			if (parentNode.right != null && parentNode.right.checkEqualPriority(obj)) {
 				if (targetNode.right != null) {
 					parentNode.right = targetNode.right;
 				} else {
 					parentNode.right = targetNode.left;
 				}
-			} else if (parentNode.left != null && parentNode.left.checkEqualPriority(obj)){
+			} else if (parentNode.left != null && parentNode.left.checkEqualPriority(obj)) {
 				if (targetNode.right != null) {
 					parentNode.left = targetNode.right;
 				} else {
@@ -104,19 +95,8 @@ public class PrioritisingQueue<T> implements DannyPriorityQueue<T> {
 			return t;
 		}
 
-		// CHILD NODES OF BOTH SMALLER AND HIGHER PRIORITY
-		QueueNode terminalNode = targetNode.right.getMinLeft();
-		QueueNode terminalNodeParent = head.getParentNode(terminalNode.getObj());
-		targetNode.obj = terminalNode.obj;
-		if (terminalNode.middle != null) {
-			targetNode.middle = terminalNode.middle;
-		}
-		assert(terminalNodeParent != null); // can't be null because we know target node is not head
-		if (terminalNodeParent.right != null && terminalNodeParent.right.checkEqualPriority(terminalNode.obj)) {
-			terminalNodeParent.right = terminalNode.right;
-		} else {
-			terminalNodeParent.left = terminalNode.right;
-		}
+		// CHILD NODES OF BOTH HIGHER AND LOWER PRIORITY
+		removeHasChildNodesLeftAndRight(targetNode);
 		return t;
 	}
 
@@ -127,11 +107,7 @@ public class PrioritisingQueue<T> implements DannyPriorityQueue<T> {
 
 	@Override
 	public int size() {
-		if (head == null) {
-			return 0;
-		} else {
-			return head.count();
-		}
+		return head == null ? 0 : head.count();
 	}
 
 	private T removeHead() {
@@ -150,22 +126,26 @@ public class PrioritisingQueue<T> implements DannyPriorityQueue<T> {
 				head = head.left;
 			} else {
 				// HEAD HAS HIGHER AND LOWER PRIORITY BRANCHES
-				QueueNode terminalNode = head.right.getMinLeft();
-				QueueNode terminalNodeParent = head.getParentNode(terminalNode.getObj());
-				head.obj = terminalNode.obj;
-				if (terminalNode.middle != null) {
-					head.middle = terminalNode.middle;
-				}
-				assert(terminalNodeParent != null); // can't be null because we know head is not a leaf
-
-				if (terminalNodeParent.right != null && terminalNodeParent.right.checkEqualPriority(terminalNode.obj)) {
-					terminalNodeParent.right = terminalNode.right;
-				} else {
-					terminalNodeParent.left = terminalNode.right;
-				}
+				removeHasChildNodesLeftAndRight(head);
 			}
 		}
 		return obj;
+	}
+
+	private void removeHasChildNodesLeftAndRight(QueueNode targetNode) {
+		QueueNode terminalNode = targetNode.right.getMinLeft();
+
+		QueueNode terminalNodeParent = head.getParentNode(terminalNode.getObj());
+		targetNode.obj = terminalNode.obj;
+		if (terminalNode.middle != null) {
+			targetNode.middle = terminalNode.middle;
+		}
+		assert (terminalNodeParent != null); // can't be null because we know target node is not head - node must have parent
+		if (terminalNodeParent.right != null && terminalNodeParent.right.checkEqualPriority(terminalNode.obj)) {
+			terminalNodeParent.right = terminalNode.right;
+		} else {
+			terminalNodeParent.left = terminalNode.right;
+		}
 	}
 
 	class QueueNode {
@@ -178,7 +158,7 @@ public class PrioritisingQueue<T> implements DannyPriorityQueue<T> {
 			this.obj = obj;
 		}
 
-		public T getObj() {
+		T getObj() {
 			return obj;
 		}
 
@@ -213,17 +193,9 @@ public class PrioritisingQueue<T> implements DannyPriorityQueue<T> {
 				return true;
 			}
 			if (compVal < 0) {
-				if (left != null) {
-					return left.checkContains(obj);
-				} else {
-					return false;
-				}
+				return left != null ? left.checkContains(obj) : false;
 			} else {
-				if (right != null) {
-					return right.checkContains(obj);
-				} else {
-					return false;
-				}
+				return right != null ? right.checkContains(obj) : false;
 			}
 		}
 
@@ -234,17 +206,9 @@ public class PrioritisingQueue<T> implements DannyPriorityQueue<T> {
 				return this;
 			}
 			if (compVal < 0) {
-				if (left != null) {
-					return left.getNode(obj);
-				} else {
-					return null;
-				}
+				return left != null ? left.getNode(obj) : null;
 			} else {
-				if (right != null) {
-					return right.getNode(obj);
-				} else {
-					return null;
-				}
+				return right != null ? right.getNode(obj) : null;
 			}
 		}
 
@@ -258,52 +222,34 @@ public class PrioritisingQueue<T> implements DannyPriorityQueue<T> {
 				return this;
 			}
 			if (compVal < 0) {
-				if (left != null) {
-					return left.getParentNode(obj);
-				} else {
-					return null;
-				}
+				return left != null ? left.getParentNode(obj) : null;
 			} else {
-				if (right != null) {
-					return right.getParentNode(obj);
-				} else {
-					return null;
-				}
+				return right != null ? right.getParentNode(obj) : null;
 			}
 		}
 
+		@Nonnull
 		QueueNode getMinLeft() {
-			if (left == null) {
-				return this;
-			} else {
-				return left.getMinLeft();
-			}
+			return left == null ? this : left.getMinLeft();
 		}
 
+		@Nonnull
 		QueueNode getMaxRight() {
-			if (right == null) {
-				return this;
-			} else {
-				return right.getMaxRight();
-			}
+			return right == null ? this : right.getMaxRight();
 		}
 
 		boolean isLeaf() {
-			if (this.left == null && this.middle == null && this.right == null) {
-				return true;
-			}
-			return false;
+			return left == null && middle == null && right == null;
 		}
 
 		boolean checkEqualPriority(T obj) {
-			if (comparator.compare(obj, this.obj) == 0) {
-				return true;
-			}
-			return false;
+			return comparator.compare(obj, this.obj) == 0;
 		}
 
 		int count() {
-			return 1 + (left == null ? 0: left.count()) + (middle == null ? 0: middle.count()) + (right == null ? 0: right.count());
+			return 1 + (left == null ? 0 : left.count())
+					+ (middle == null ? 0 : middle.count())
+					+ (right == null ? 0 : right.count());
 		}
 
 		void deleteThisContainingSamePriority() {
