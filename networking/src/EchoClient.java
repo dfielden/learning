@@ -21,6 +21,8 @@ public class EchoClient {
 				BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
 		) {
 			String userInput;
+			System.out.println("ask me about good danny");
+
 			// Read the standard input stream one line at a time and immediately send to server by writing it to the
 			// Print Writer connected to the socket
 			while ((userInput = stdIn.readLine()) != null) {
@@ -28,7 +30,7 @@ public class EchoClient {
 				// Reads a line of information from the Buffered Reader connected to the socket.
 				// readLine method waits until the server echoes the info back to the client
 				// When readLine returns, the client prints the info to the standard output
-				System.out.println("echo: " + in.readLine());
+				System.out.println("answer: " + in.readLine());
 				// while loop continues until user enters an end-of-input character (Ctrl-C)
 				// Then Java runtime closes readers, writers and socket connections automatically as try-with-resources used.
 			}
