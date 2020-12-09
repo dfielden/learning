@@ -17,7 +17,7 @@ public class EchoServer {
 			Socket clientSocket = serverSocket.accept();
 			// Get socket's input and output stream and open readers and writers on them
 			PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-			BufferedReader in = new BufferedReader((new InputStreamReader(clientSocket.getInputStream())));
+			BufferedReader in = new BufferedReader((new InputStreamReader(clientSocket.getInputStream())))
 		) {
 			String inputLine;
 			// communicate with client by reading from and writing to the socket

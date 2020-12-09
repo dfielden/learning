@@ -18,7 +18,7 @@ public class EchoClient {
 				// Get the socket's input stream and open a Buffered Reader on it
 				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 				// Create Buffered Reader to read the server's response
-				BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
+				BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in))
 		) {
 			String userInput;
 			System.out.println("ask me about good danny");
