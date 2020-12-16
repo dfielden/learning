@@ -1,5 +1,5 @@
-package danrpc;
+package listrpc;
 
-public class RpcCommon {
+public class ListCommon {
 	final static int PORT_NUMBER = 8000;
 }
